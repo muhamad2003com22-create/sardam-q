@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#ff6b35">
+    <title>بەڕێوەبردنی پێشبڕکێی پەیمانگا | کۆنترۆڵ پەنێڵ</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>">
+    <style>
+        /* ── Admin Login Overlay ── */
+        #admin-login-overlay {
+            position: fixed; inset: 0; z-index: 300;
+            background: linear-gradient(135deg, #f0fff4 0%, #fff 60%, #f0fff4 100%);
+            display: flex; align-items: center; justify-content: center;
+            padding: 1.5rem;
+        }
+        #admin-login-overlay.hidden { display: none; }
+        .admin-login-box {
+            background: #fff;
+            border: 1.5px solid #9ae6b4;
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            width: 100%; max-width: 400px;
+            box-shadow: 0 12px 40px rgba(56,161,105,.18);
+            text-align: center;
+        }
+        .admin-login-icon {
+            width: 68px; height: 68px;
+            background: linear-gradient(135deg, #38a169, #48bb78);
+            border-radius: 20px; margin: 0 auto 1.2rem;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 6px 20px rgba(56,161,105,.35);
+        }
+        .admin-login-box h2 { font-size: 1.3rem; font-weight: 900; color: #1a1a2e; margin-bottom: .3rem; }
+        .admin-login-box .sub { font-size: .82rem; color: #666680; margin-bottom: 1.75rem; }
+        .admin-login-fields { display: flex; flex-direction: column; gap: .85rem; text-align: right; }
+        .admin-login-fields label { font-size: .84rem; font-weight: 700; color: #666680; display: block; margin-bottom: .3rem; }
+        .admin-login-fields input {
+            width: 100%; padding: .82rem 1rem;
+            background: #f7fdf9; border: 1.5px solid #c6f6d5;
+            border-radius: 10px; color: #1a1a2e; font-size: 16px; outline: none; transition: all .2s;
+        }
+        .admin-login-fields input:focus { border-color: #38a169; box-shadow: 0 0 0 3px rgba(56,161,105,.18); background: #fff; }
+        .admin-err {
+            background: #fff5f5; border: 1.5px solid #fed7d7;
+            border-radius: 8px; padding: .6rem .9rem;
+            color: #c53030; font-size: .82rem; font-weight: 700;
+            display: none; margin-top: .4rem;
+        }
+        .admin-err.show { display: block; }
+        .btn-admin-login {
+            width: 100%; margin-top: 1rem;
+            background: linear-gradient(135deg, #38a169, #276749);
+            color: #fff; border: none;
+            padding: .95rem; font-size: 1rem; font-weight: 800;
+            border-radius: 12px; cursor: pointer;
+            box-shadow: 0 6px 20px rgba(56,161,105,.35);
+            transition: all .2s;
+        }
+        .btn-admin-login:hover { filter: brightness(1.08); transform: translateY(-2px); }
+        .btn-admin-login:active { transform: scale(.97); }
+        .admin-hint {
+            margin-top: 1rem; padding: .7rem .9rem;
+            background: #f0fff4; border: 1.5px dashed #9ae6b4;
+            border-radius: 10px; font-size: .78rem; color: #276749; line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ═══ ADMIN LOGIN OVERLAY ═══ -->
+    <div id="admin-login-overlay">
+        <div class="admin-login-box">
+            <div class="admin-login-icon">🔐</div>
+            <h2>پەنێڵی بەڕێوەبەری پەیمانگا</h2>
+            <p class="sub">تەنها بەڕێوەبەری پەیمانگا دەتوانێت بچێتە ژوورەوە<br>تکایە ناوی بەکارهێنەر و پاسوۆردی ئادمین داخل بکە</p>
+            <form id="admin-login-form" class="admin-login-fields">
+                <div>
+                    <label for="admin-user">👤 ناوی بەکارهێنەری ئادمین (Username):</label>
+                    <input type="text" id="admin-user" placeholder="ناوی بەکارهێنەر بنووسە..." autocomplete="username" required>
+                </div>
+                <div>
+                    <label for="admin-pass">🔑 پاسوۆردی ئادمین (Password):</label>
+                    <input type="password" id="admin-pass" placeholder="پاسوۆردی ئادمین..." autocomplete="current-password" required>
+                </div>
+                <div class="admin-err" id="admin-err">❌ ناوی بەکارهێنەر یان پاسوۆرد هەڵەیە!</div>
+                <button type="submit" class="btn-admin-login">🔓 چوونەژوورەوەی بەڕێوەبەر</button>
+            </form>
+            <div class="admin-hint">
+                💡 زانیاری بنەڕەتی بەڕێوەبەر:<br>
+                ناوی بەکارهێنەر: <strong>admin</strong> | پاسوۆرد: <strong>admin2024</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ HEADER ═══ -->
+    <header class="app-header">
+        <div class="brand">
+            <div class="brand-icon" style="background: linear-gradient(135deg, #38a169, #48bb78);">⚙️</div>
+            <div class="brand-text">
+                <h1>کۆنترۆڵ پەنێڵی بەڕێوەبەری پەیمانگا</h1>
+                <p>دانانی پرسیارەکان، بینینی دەرهێنراوان، بەڕێوەبردنی کات</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="index.html" class="nav-btn" style="background:#f0fff4; border-color:#9ae6b4; color:#276749;">
+                👁️ پێشبڕکێکە ببینە
+            </a>
+            <button id="btn-admin-logout" class="nav-btn" style="background:#fff5f5; border-color:#fed7d7; color:#c53030;">
+                🚪 دەرچوون
+            </button>
+        </div>
+    </header>
+
+    <!-- ═══ MAIN ═══ -->
+    <main class="main-content">
+
+        <!-- Quick Stats -->
+        <div class="glass-panel stats-bar">
+            <div class="stat-item">
+                <div class="stat-num" id="stat-total-q">0</div>
+                <div class="stat-desc">📋 ژمارەی پرسیارەکان</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num green" id="stat-active-students">0</div>
+                <div class="stat-desc">⚡ خوێندکارانی ماوە</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num red" id="stat-eliminated-students">0</div>
+                <div class="stat-desc">💀 دەرکراوەکان</div>
+            </div>
+        </div>
+
+        <!-- 🔴 LIVE GAME CONTROL PANEL -->
+        <div class="glass-panel" style="padding:1.25rem 1.5rem; background:linear-gradient(135deg,#fff8f5,#fff); border:2px solid #ff6b35;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                <div>
+                    <h3 style="margin:0 0 .3rem 0; font-size:1.15rem; color:#1a1a2e; display:flex; align-items:center; gap:.5rem;">
+                        <span id="live-indicator-dot" style="width:12px; height:12px; border-radius:50%; background:#94a3b8; display:inline-block;"></span>
+                        <span>کۆنترۆڵی دەستپێکردنی پێشبڕکێ (Live Control)</span>
+                    </h3>
+                    <p style="margin:0; font-size:.85rem; color:var(--text-muted);" id="admin-live-status-text">
+                        ⚪ پێشبڕکێ داخراوە (خەڵک ناتوانن یاری بکەن تا سەعات ١٠:٣٠ یان دەستپێکردن)
+                    </p>
+                </div>
+                <div style="display:flex; gap:.6rem; flex-wrap:wrap;">
+                    <button type="button" id="btn-toggle-live" class="btn-primary"
+                        style="background:linear-gradient(135deg,#10b981,#059669); padding:.65rem 1.25rem; font-size:.9rem;">
+                        🔴 دەستپێکردنی پێشبڕکێ بۆ هەمووان (Start Live Now)
+                    </button>
+                    <button type="button" id="btn-stop-live" class="btn-secondary"
+                        style="padding:.65rem 1rem; font-size:.85rem;">
+                        ⏸️ ڕاگرتن / قفڵکردنەوە بۆ ١٠:٣٠
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-grid">
+
+            <!-- Add Question -->
+            <div class="glass-panel admin-card">
+                <h3>➕ دانانی پرسیاری نوێ بۆ ئەمشەو</h3>
+                <form id="add-question-form">
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label for="q-text">📝 دەقی پرسیار:</label>
+                        <textarea id="q-text" class="form-control" rows="3"
+                            placeholder="پرسیارەکەت لێرە بنووسە..." required></textarea>
+                    </div>
+
+                    <div class="admin-form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:.7rem; margin-bottom:1rem;">
+                        <div class="form-group">
+                            <label>بژاردەی (أ):</label>
+                            <input type="text" id="opt-0" class="form-control" placeholder="وەڵامی یەکەم" required>
+                        </div>
+                        <div class="form-group">
+                            <label>بژاردەی (ب):</label>
+                            <input type="text" id="opt-1" class="form-control" placeholder="وەڵامی دووەم" required>
+                        </div>
+                        <div class="form-group">
+                            <label>بژاردەی (ج):</label>
+                            <input type="text" id="opt-2" class="form-control" placeholder="وەڵامی سێیەم" required>
+                        </div>
+                        <div class="form-group">
+                            <label>بژاردەی (د):</label>
+                            <input type="text" id="opt-3" class="form-control" placeholder="وەڵامی چوارەم" required>
+                        </div>
+                    </div>
+
+                    <div class="admin-form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:.7rem; margin-bottom:1.25rem;">
+                        <div class="form-group">
+                            <label for="correct-opt">✅ وەڵامی دروست:</label>
+                            <select id="correct-opt" class="form-control">
+                                <option value="0">بژاردەی (أ)</option>
+                                <option value="1">بژاردەی (ب)</option>
+                                <option value="2">بژاردەی (ج)</option>
+                                <option value="3">بژاردەی (د)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="time-limit">⏱️ کاتی پرسیار (چرکە):</label>
+                            <input type="number" id="time-limit" class="form-control" value="15" min="5" max="60" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="width:100%;">
+                        💾 زیادکردنی ئەم پرسیارە
+                    </button>
+                </form>
+            </div>
+
+            <!-- Settings -->
+            <div class="glass-panel admin-card">
+                <h3>⚙️ ڕێکخستنی پێشبڕکێکە</h3>
+                <form id="settings-form">
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label for="inst-name">🏫 ناوی پەیمانگا:</label>
+                        <input type="text" id="inst-name" class="form-control" value="پەیمانگای پەروەردەیی و تەکنیکی">
+                    </div>
+
+                    <div class="admin-form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:.7rem; margin-bottom:1rem;">
+                        <div class="form-group">
+                            <label for="target-hour">⏰ کاتژمێر (٠-٢٣):</label>
+                            <input type="number" id="target-hour" class="form-control" value="22" min="0" max="23">
+                            <small style="color:var(--text-dim); font-size:.72rem;">22 = کاتژمێر ١٠ی شەو</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="target-min">خولەک (٠-٥٩):</label>
+                            <input type="number" id="target-min" class="form-control" value="30" min="0" max="59">
+                            <small style="color:var(--text-dim); font-size:.72rem;">30 = نیو کاتژمێر</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label for="prize-title-input">🎁 خەڵاتی تایبەتی ئەمشەو:</label>
+                        <input type="text" id="prize-title-input" class="form-control" value="کارتی ئینتەرنێت + خەڵاتی ڕێزلێنانی پەیمانگا" placeholder="خەڵاتەکەی ئەمشەو بنووسە...">
+                        <small style="color:var(--text-dim); font-size:.72rem;">ئەم دەقە لە بانەری خەڵاتی لاپەڕەی سەرەکی بۆ هەموو خوێندکاران دەردەکەوێت</small>
+                    </div>
+
+                    <div class="admin-form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:.7rem; margin-bottom:1.25rem;">
+                        <div class="form-group">
+                            <label for="admin-username">👤 ناوی بەکارهێنەری ئادمین:</label>
+                            <input type="text" id="admin-username" class="form-control" value="admin"
+                                placeholder="ناوی بەکارهێنەری ئادمین" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-password">🛡️ پاسوۆردی ئادمین:</label>
+                            <input type="text" id="admin-password" class="form-control" value="admin2024"
+                                placeholder="پاسوۆردی ئادمین" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="background:linear-gradient(135deg,#38a169,#276749); width:100%; margin-bottom:1rem;">
+                        💾 تۆمارکردنی هەموو ڕێکخستنەکان
+                    </button>
+                </form>
+
+                <!-- Reset -->
+                <div style="border-top:1.5px solid var(--border); padding-top:1.1rem; margin-top:.5rem;">
+                    <p style="font-size:.82rem; color:var(--text-muted); margin-bottom:.75rem;">
+                        ⚠️ پاككردنەوەی بەشداربووان بۆ دەستپێکردنی شەوی نوێ:
+                    </p>
+                    <button type="button" id="btn-reset-participants" class="btn-primary"
+                        style="background:linear-gradient(135deg,var(--danger),var(--danger-dark)); width:100%;">
+                        🗑️ ڕیسێتکردنی بەشداربووان
+                    </button>
+                </div>
+            </div>
+
+        </div><!-- /admin-grid -->
+
+        <!-- Questions List -->
+        <div class="glass-panel admin-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.85rem; gap:.5rem;">
+                <h3 style="margin:0; border:none; padding:0;">📋 لیستی پرسیارە چالاکەکان</h3>
+                <button id="btn-restore-default" class="nav-btn" style="font-size:.78rem;">
+                    ↩️ پرسیارە بنەڕەتییەکان
+                </button>
+            </div>
+            <div id="questions-list"></div>
+        </div>
+
+        <!-- Participants Log -->
+        <div class="glass-panel admin-card">
+            <h3>👥 تۆماری خوێندکاران و دەرکراوەکان</h3>
+            <div id="admin-participants-list"
+                style="display:flex; flex-direction:column; gap:.6rem; max-height:350px; overflow-y:auto;"></div>
+        </div>
+
+    </main>
+
+    <footer class="app-footer">
+        <p>پەنێڵی بەڕێوەبردنی پەیمانگا © هەموو مافەکانی پارێزراوە</p>
+    </footer>
+
+    <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#ff6b35">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>پێشبڕکێی شەوانەی پەیمانگا | کاتژمێر ١٠:٣٠</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+    <style>
+/* ════════════════════════════════════════
+   AUTH OVERLAY
+════════════════════════════════════════ */
+#auth-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: linear-gradient(135deg, #fff7f3 0%, #fff 55%, #fff4ee 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 1.25rem; overflow-y: auto;
+}
+#auth-overlay.hidden { display: none; }
+
+.auth-box {
+    background: #fff;
+    border: 1.5px solid #ffe0cc;
+    border-radius: 24px;
+    width: 100%; max-width: 430px;
+    box-shadow: 0 14px 44px rgba(255,107,53,.18);
+    overflow: hidden;
+}
+
+/* ── Top Logo / Brand ── */
+.auth-top {
+    background: linear-gradient(135deg, #ff6b35, #e05a28);
+    padding: 1.75rem 1.5rem 1.25rem;
+    text-align: center;
+}
+.auth-logo-wrap {
+    width: 64px; height: 64px;
+    background: rgba(255,255,255,.2);
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; margin: 0 auto .85rem;
+    border: 2px solid rgba(255,255,255,.35);
+}
+.auth-top h2 { color: #fff; font-size: 1.25rem; font-weight: 900; margin-bottom: .2rem; }
+.auth-top p  { color: rgba(255,255,255,.8); font-size: .8rem; }
+
+/* ── Tabs ── */
+.auth-tabs {
+    display: grid; grid-template-columns: 1fr 1fr;
+    border-bottom: 2px solid #f0ebe7;
+}
+.auth-tab {
+    padding: .9rem; text-align: center;
+    font-size: .9rem; font-weight: 800; color: #999;
+    cursor: pointer; transition: all .2s;
+    border: none; background: none;
+    border-bottom: 2.5px solid transparent;
+    margin-bottom: -2px;
+}
+.auth-tab.active { color: #ff6b35; border-bottom-color: #ff6b35; background: #fff8f5; }
+
+/* ── Forms ── */
+.auth-form-wrap { padding: 1.5rem; }
+.auth-panel { display: none; }
+.auth-panel.active { display: block; }
+
+.auth-field { margin-bottom: .85rem; }
+.auth-field label { display: block; font-size: .84rem; font-weight: 700; color: #666680; margin-bottom: .32rem; }
+
+.auth-input {
+    width: 100%; padding: .82rem 1rem;
+    background: #faf9f7; border: 1.5px solid #e8e8f0;
+    border-radius: 10px; color: #1a1a2e;
+    font-size: 16px; outline: none; transition: all .2s;
+    font-family: inherit;
+}
+.auth-input:focus { border-color: #ff6b35; box-shadow: 0 0 0 3px rgba(255,107,53,.18); background: #fff; }
+.auth-input::placeholder { color: #bbbbd0; }
+
+.auth-err {
+    background: #fff5f5; border: 1.5px solid #fed7d7;
+    border-radius: 8px; padding: .6rem .9rem;
+    color: #c53030; font-size: .82rem; font-weight: 700;
+    margin-top: .6rem; display: none;
+}
+.auth-err.show { display: block; }
+
+.auth-success {
+    background: #f0fff4; border: 1.5px solid #c6f6d5;
+    border-radius: 8px; padding: .6rem .9rem;
+    color: #276749; font-size: .82rem; font-weight: 700;
+    margin-top: .6rem; display: none;
+}
+.auth-success.show { display: block; }
+
+.btn-auth {
+    width: 100%; margin-top: .9rem;
+    background: linear-gradient(135deg, #ff6b35, #e05a28);
+    color: #fff; border: none;
+    padding: .92rem; font-size: 1rem; font-weight: 800;
+    border-radius: 12px; cursor: pointer;
+    box-shadow: 0 6px 20px rgba(255,107,53,.35);
+    transition: all .2s; font-family: inherit;
+}
+.btn-auth:hover  { filter: brightness(1.08); transform: translateY(-2px); }
+.btn-auth:active { transform: scale(.97); }
+
+.auth-switch {
+    text-align: center; margin-top: .85rem;
+    font-size: .82rem; color: #888;
+}
+.auth-switch button {
+    background: none; border: none; color: #ff6b35;
+    font-weight: 800; cursor: pointer; font-size: .82rem;
+    font-family: inherit;
+}
+
+/* Password strength bar */
+.pass-strength { margin-top: .4rem; height: 4px; border-radius: 2px; background: #e8e8f0; overflow: hidden; }
+.pass-strength-bar { height: 100%; width: 0; transition: width .3s, background .3s; border-radius: 2px; }
+.pass-hint { font-size: .72rem; color: #999; margin-top: .25rem; }
+
+/* Show/hide password toggle */
+.input-wrap { position: relative; }
+.input-wrap .toggle-pass {
+    position: absolute; left: .85rem; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; font-size: .9rem; color: #999;
+    padding: 0;
+}
+    </style>
+</head>
+<body>
+    <canvas id="confettiCanvas"></canvas>
+
+    <!-- ════════════════════════════════════════
+         AUTH OVERLAY
+    ════════════════════════════════════════ -->
+    <div id="auth-overlay">
+        <div class="auth-box">
+
+            <!-- Brand Top -->
+            <div class="auth-top">
+                <div class="auth-logo-wrap">🎓</div>
+                <h2>پێشبڕکێی شەوانەی پەیمانگا</h2>
+                <p>چوونەژوورەوە یان ئەکاونتی نوێ دروست بکە</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login"   onclick="switchTab('login')">🔑 چوونەژوورەوە</button>
+                <button class="auth-tab"         id="tab-register" onclick="switchTab('register')">📝 تۆمارکردن</button>
+            </div>
+
+            <div class="auth-form-wrap">
+
+                <!-- ── LOGIN PANEL ── -->
+                <div class="auth-panel active" id="panel-login">
+                    <form id="login-form" autocomplete="on">
+
+                        <div class="auth-field">
+                            <label for="l-username">👤 ناوی بەکارهێنەر (Username):</label>
+                            <input class="auth-input" type="text" id="l-username"
+                                placeholder="ناوی بەکارهێنەرت بنووسە..." autocomplete="username" required>
+                        </div>
+
+                        <div class="auth-field">
+                            <label for="l-password">🔑 پاسوۆرد:</label>
+                            <div class="input-wrap">
+                                <input class="auth-input" type="password" id="l-password"
+                                    placeholder="پاسوۆردەکەت بنووسە..." autocomplete="current-password" required
+                                    style="padding-left:2.5rem;">
+                                <button type="button" class="toggle-pass" onclick="togglePass('l-password', this)">👁️</button>
+                            </div>
+                        </div>
+
+                        <div class="auth-err" id="login-err"></div>
+
+                        <button type="submit" class="btn-auth">⚡ چوونەژوورەوە</button>
+                    </form>
+                    <div class="auth-switch">
+                        هێشتا ئەکاونتت نییە؟
+                        <button onclick="switchTab('register')">ئەکاونتی نوێ دروست بکە →</button>
+                    </div>
+                </div>
+
+                <!-- ── REGISTER PANEL ── -->
+                <div class="auth-panel" id="panel-register">
+                    <form id="register-form" autocomplete="off">
+
+                        <div class="auth-field">
+                            <label for="r-name">✍️ ناوی تەواوت (ناوی ڕاستەقینە):</label>
+                            <input class="auth-input" type="text" id="r-name"
+                                placeholder="ناوی چواری خۆت بنووسە..." required>
+                        </div>
+
+                        <div class="auth-field">
+                            <label for="r-dept">🏫 بەش / قۆناغ:</label>
+                            <input class="auth-input" type="text" id="r-dept"
+                                placeholder="نموونە: کۆمپیوتەر — قۆناغی دووەم">
+                        </div>
+
+                        <div class="auth-field">
+                            <label for="r-username">👤 ناوی بەکارهێنەر (Username):</label>
+                            <input class="auth-input" type="text" id="r-username"
+                                placeholder="نموونە: alan_k" autocomplete="off"
+                                oninput="checkUsernameAvail(this.value)" required>
+                            <div class="pass-hint" id="username-hint" style="color:#999;">بە ئینگلیزی، بەبێ فەراغ</div>
+                        </div>
+
+                        <div class="auth-field">
+                            <label for="r-password">🔑 پاسوۆردی تایبەتی خۆت:</label>
+                            <div class="input-wrap">
+                                <input class="auth-input" type="password" id="r-password"
+                                    placeholder="لانیکەم ٦ پیت..." autocomplete="new-password"
+                                    oninput="updateStrength(this.value)"
+                                    style="padding-left:2.5rem;" required>
+                                <button type="button" class="toggle-pass" onclick="togglePass('r-password', this)">👁️</button>
+                            </div>
+                            <div class="pass-strength"><div class="pass-strength-bar" id="pass-bar"></div></div>
+                            <div class="pass-hint" id="pass-hint">لانیکەم ٦ پیت بنووسە</div>
+                        </div>
+
+                        <div class="auth-field">
+                            <label for="r-password2">🔁 پاسوۆرد دووبارە بنووسە:</label>
+                            <div class="input-wrap">
+                                <input class="auth-input" type="password" id="r-password2"
+                                    placeholder="پاسوۆردەکەت دووبارە..." autocomplete="new-password"
+                                    style="padding-left:2.5rem;" required>
+                                <button type="button" class="toggle-pass" onclick="togglePass('r-password2', this)">👁️</button>
+                            </div>
+                        </div>
+
+                        <div class="auth-err"     id="register-err"></div>
+                        <div class="auth-success" id="register-ok"></div>
+
+                        <button type="submit" class="btn-auth"
+                            style="background:linear-gradient(135deg,#38a169,#276749);">
+                            ✅ دروستکردنی ئەکاونت
+                        </button>
+                    </form>
+                    <div class="auth-switch">
+                        ئەکاونتت هەیە؟
+                        <button onclick="switchTab('login')">← چوونەژوورەوە</button>
+                    </div>
+                </div>
+
+            </div><!-- /auth-form-wrap -->
+        </div><!-- /auth-box -->
+    </div><!-- /auth-overlay -->
+
+    <!-- ═══ HEADER ═══ -->
+    <header class="app-header">
+        <div class="brand">
+            <div class="brand-icon">🎓</div>
+            <div class="brand-text">
+                <h1>پێشبڕکێی شەوانەی پەیمانگا</h1>
+                <p>هەموو شەوێک ڕێک لە کاتژمێر ١٠:٣٠ی شەو</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="nav-btn sound-toggle-btn" id="sound-toggle" title="دەنگ">🔊</button>
+            <button class="nav-btn" id="btn-view-profile" style="display:none;">👤 پرۆفایلم</button>
+            <a href="admin.html" class="nav-btn" style="background:#fff4ee; border-color:#ffd1b3; color:#c05621;" title="چوون بۆ بەشی بەڕێوەبەر">
+                ⚙️ بەڕێوەبەر
+            </a>
+        </div>
+    </header>
+
+    <!-- ═══ MAIN ═══ -->
+    <main class="main-content">
+
+        <!-- 🎁 Daily Prize Banner -->
+        <div class="prize-banner" id="prize-banner">
+            <div class="prize-icon">🎁</div>
+            <div class="prize-content">
+                <div class="prize-tag">خەڵاتی تایبەتی ئەمشەو</div>
+                <div class="prize-title" id="prize-title-display">کارتی ئینتەرنێت + خەڵاتی ڕێزلێنانی پەیمانگا</div>
+            </div>
+            <span style="font-size:0.75rem; background:#fef3c7; border:1px solid #fde68a; padding:0.25rem 0.65rem; border-radius:50px; font-weight:800; color:#b45309;">
+                🏆 شەوانە کاتژمێر ١٠:٣٠
+            </span>
+        </div>
+
+        <!-- One‑Strike Warning -->
+        <div class="strike-warning-banner">
+            <div class="strike-icon">⚠️</div>
+            <div>
+                <div class="strike-title">یاسای زێڕینی پێشبڕکێکە: تەنها یەک هەڵە = دەرکران!</div>
+                <div class="strike-desc">وەڵامی هەموو پرسیارەکان دەبێت دروست بێت. ئەگەر تەنانەت یەک وەڵامی هەڵەیش بدەیتەوە، ڕاستەوخۆ لە پێشبڕکێکە دەردەکرێیت!</div>
+            </div>
+        </div>
+
+        <!-- SCREEN 1 — Waiting -->
+        <section id="screen-waiting" class="quiz-screen active glass-panel countdown-box">
+            <div class="hero-badge-wrap">
+                <span class="live-badge"><span class="live-pulse"></span><span>🔴 شەوانە لە سەعات ١٠:٣٠</span></span>
+            </div>
+            <h2 class="countdown-title">ئامادەبە بۆ ڕکابەرییە گەورەکە</h2>
+            <p class="countdown-sub" id="live-status-notice">کاتی ماوە بۆ دەستپێکردنی پێشبڕکێی ئەم شەو:</p>
+
+            <div class="clock-timer">
+                <div class="time-slot"><div class="time-val" id="timer-hours">00</div><div class="time-label">کاتژمێر</div></div>
+                <div class="time-slot"><div class="time-val" id="timer-minutes">00</div><div class="time-label">خولەک</div></div>
+                <div class="time-slot"><div class="time-val" id="timer-seconds">00</div><div class="time-label">چرکە</div></div>
+            </div>
+
+            <!-- Welcome card -->
+            <div id="welcome-card" style="
+                background:linear-gradient(135deg,#fff4ee,#fff);
+                border:1.5px solid #ffd1b3; border-radius:16px;
+                padding:1.1rem 1.25rem; max-width:440px; margin:0 auto 1.4rem;
+                display:flex; align-items:center; gap:1rem; text-align:right;">
+                <div id="welcome-avatar" style="
+                    width:52px; height:52px; border-radius:50%; background:#ff6b35; flex-shrink:0;
+                    display:flex; align-items:center; justify-content:center;
+                    color:#fff; font-weight:900; font-size:1.15rem;
+                    border:3px solid #fff; box-shadow:0 4px 14px rgba(255,107,53,.35);">؟</div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:900; font-size:1rem; color:#1a1a2e;" id="welcome-name">خوێندکار</div>
+                    <div style="font-size:.8rem; color:#666680; margin:.1rem 0;" id="welcome-dept">بەشداربوو</div>
+                    <div id="welcome-rank" style="display:inline-flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:800;padding:.18rem .6rem;border-radius:50px;border:1px solid;margin-top:.2rem;">🌱 تازەکار</div>
+                </div>
+                <button onclick="if(window.currentPlayer)window.openProfileModal(window.currentPlayer.name)"
+                    style="background:var(--bg-orange-lt);border:1.5px solid var(--bg-orange-md);color:var(--orange-dark);padding:.4rem .7rem;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+                    📊 پرۆفایل
+                </button>
+            </div>
+
+            <button type="button" class="btn-primary" id="btn-enter-game" style="max-width:440px;margin:0 auto .75rem;display:flex;">
+                ⚡ دەستپێکردنی پێشبڕکێکە
+            </button>
+            <button type="button" class="btn-test" id="btn-test-now" style="max-width:440px;margin:0 auto;display:block;">
+                🧪 تاقیکردنەوەی خێرا ئێستا (بەبێ چاوەڕوانی کاتژمێر ١٠:٣٠)
+            </button>
+        </section>
+
+        <!-- SCREEN 2 — Game -->
+        <section id="screen-game" class="quiz-screen glass-panel game-card">
+            <div class="game-meta-bar">
+                <div class="player-info">
+                    <div class="player-avatar">👤</div>
+                    <div>
+                        <div class="player-name" id="current-player-name">بەشداربوو</div>
+                        <div class="player-status">🟢 لە پێشبڕکێکە ماویتەتەوە</div>
+                    </div>
+                </div>
+                <div class="game-stats">
+                    <div class="question-counter" id="question-counter">پرسیاری ١ لە ٥</div>
+                    <div class="timer-circle-wrap">
+                        <svg width="48" height="48">
+                            <circle class="timer-circle-bg" cx="24" cy="24" r="20"></circle>
+                            <circle class="timer-circle-progress" id="timer-progress"
+                                cx="24" cy="24" r="20" stroke-dasharray="125.6" stroke-dashoffset="0"></circle>
+                        </svg>
+                        <span class="timer-number" id="timer-number">15</span>
+                    </div>
+                </div>
+            </div>
+            <div class="question-prompt" style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem;">
+                <span id="question-text" style="flex:1;">باردەکرێت...</span>
+                <button type="button" class="tts-btn" id="btn-read-question" title="خوێندنەوەی پرسیار بە دەنگ">🔊</button>
+            </div>
+
+            <!-- 🛟 Lifelines (کارتەکانی یارمەتی) -->
+            <div class="lifelines-bar">
+                <button type="button" class="lifeline-btn" id="btn-lifeline-5050" title="سڕینەوەی دوو وەڵامی هەڵە">
+                    <span>🛟 50:50</span>
+                    <small style="color:var(--text-dim);">(سڕینەوەی ٢ وەڵام)</small>
+                </button>
+                <button type="button" class="lifeline-btn" id="btn-lifeline-time" title="زیادکردنی ١٠ چرکە">
+                    <span>⏱️ +10s</span>
+                    <small style="color:var(--text-dim);">(زیادکردنی کات)</small>
+                </button>
+            </div>
+
+            <div class="options-grid" id="options-container"></div>
+        </section>
+
+        <!-- SCREEN 3 — Eliminated -->
+        <section id="screen-eliminated" class="quiz-screen glass-panel elimination-card">
+            <div class="skull-animation">💀</div>
+            <div class="eliminated-badge">تۆ دەرکرایت!</div>
+            <h2>بەداخەوە، لە پێشبڕکێکە دەرکرایت!</h2>
+            <p>بەپێی یاسای پێشبڕکێکە، بە هەڵەکردنی یەک پرسیار ڕاستەوخۆ دەردەکرێیت.</p>
+            <div id="elimination-profile-mini"></div>
+            <div class="elimination-reason">
+                <div>بەشداربوو: <strong id="elimination-player-name">---</strong></div>
+                <div>هۆکاری دەرکران: <span id="elimination-reason-text">وەڵامی هەڵە</span></div>
+            </div>
+            <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;">
+                <button onclick="if(window.currentPlayer)window.openProfileModal(window.currentPlayer.name)"
+                    class="btn-primary" style="background:linear-gradient(135deg,#805ad5,#553c9a);min-width:140px;">
+                    📊 پرۆفایلم ببینم
+                </button>
+                <button type="button" class="btn-secondary" id="btn-retry-game"
+                    style="display:flex;align-items:center;justify-content:center;gap:.5rem;min-width:140px;">
+                    🔄 گەڕانەوە
+                </button>
+            </div>
+        </section>
+
+        <!-- SCREEN 4 — Victory -->
+        <section id="screen-victory" class="quiz-screen glass-panel victory-card">
+            <div class="trophy-animation">🏆</div>
+            <h2>پیرۆزە! تۆ لە براوەکانی ئەم شەویت!</h2>
+            <div id="victory-profile-mini"></div>
+            <p>بەڕێز <strong id="victory-player-name" style="color:var(--success);">خوێندکار</strong>،
+               هەموو پرسیارەکانت بە سەرکەوتوویی وەڵام دایەوە!</p>
+            <div class="info-box">
+                <div class="info-box-title">🎖️ بڕوانامەی شایستەیی</div>
+                <div class="info-box-desc">ناوت لە لیستی براوە فەرمییەکانی پەیمانگا تۆمار کرا بۆ پێدانی خەڵاتی شەوانە.</div>
+            </div>
+            <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;">
+                <button type="button" id="btn-download-cert"
+                    class="btn-primary" style="background:linear-gradient(135deg,#f59e0b,#d97706);min-width:140px;">
+                    📜 داگرتنی بڕوانامە
+                </button>
+                <button onclick="if(window.currentPlayer)window.openProfileModal(window.currentPlayer.name)"
+                    class="btn-primary" style="background:linear-gradient(135deg,#805ad5,#553c9a);min-width:140px;">
+                    📊 پرۆفایلم ببینم
+                </button>
+                <button type="button" class="btn-primary" onclick="location.reload()" style="min-width:140px;">
+                    🔁 پێشبڕکێی داهاتوو
+                </button>
+            </div>
+        </section>
+
+        <!-- 💬 Live Waiting Chat -->
+        <section class="glass-panel chat-card" id="waiting-chat-card">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <span>💬 چاتی ڕاستەوخۆی خوێندکاران (چاوەڕوانی)</span>
+                </div>
+                <span style="font-size:0.75rem; color:var(--text-dim);">پێش سەعات ١٠:٣٠</span>
+            </div>
+            <div class="chat-messages" id="chat-messages-box">
+                <!-- Dynamically populated messages -->
+            </div>
+            <form id="chat-form" class="chat-input-row">
+                <input type="text" id="chat-input" class="chat-input" placeholder="پەیامێک بنووسە بۆ خوێندکاران..." maxlength="120" required>
+                <button type="submit" class="chat-send-btn">ناردن</button>
+            </form>
+        </section>
+
+        <!-- Survivors & Leaderboard -->
+        <section class="glass-panel survivors-panel">
+            <div class="panel-header">
+                <div class="panel-title">🏆 تابلۆی پاڵەوانان و بەشداربووان</div>
+                <span class="survivor-count" id="survivors-count">0 کەس ماون</span>
+            </div>
+            <p style="font-size:.78rem;color:var(--text-dim);margin-bottom:.75rem;">
+                👆 کلیک لەسەر هەر خوێندکارێک بکە بۆ بینینی پرۆفایل و ئەنجامەکانی
+            </p>
+            <div class="survivor-list" id="survivors-list"></div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <p>سیستەمی پێشبڕکێی شەوانەی پەیمانگا © هەموو مافەکانی پارێزراوە — شەوان کاتژمێر ١٠:٣٠</p>
+    </footer>
+
+    <script src="audio.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
