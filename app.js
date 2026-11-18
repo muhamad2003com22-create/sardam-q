@@ -2044,7 +2044,8 @@ function initCountdownTimer() {
         if (liveNotice) {
             const h = s.targetHour ?? 22;
             const m = s.targetMinute ?? 30;
-            liveNotice.innerHTML = `⏳ پێشبڕکێ هەموو شەوێک لە کاتژمێر <strong>${h % 12 || 12}:${String(m).padStart(2,'0')} شەو</strong> دەستپێدەکات.<br><small style="color:var(--text-dim);">خەڵکی ناتوانن یاری بکەن تاکو بەڕێوەبەر دەستیپێنەکات یان کاتەکەی نەگات.</small>`;
+            const periodStr = h >= 12 ? 'شەو / ئێوارە' : 'بەیانی';
+            liveNotice.innerHTML = `⏳ پێشبڕکێ لە کاتژمێر <strong>${h % 12 || 12}:${String(m).padStart(2,'0')}ی ${periodStr}</strong> دەستپێدەکات.<br><small style="color:var(--text-dim);">خوێندکاران ناتوانن یاری بکەن تاکو بەڕێوەبەر دەستیپێنەکات یان کاتەکەی نەگات.</small>`;
             liveNotice.style.color = '';
         }
     }

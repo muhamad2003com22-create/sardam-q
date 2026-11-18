@@ -635,14 +635,102 @@ function setupAdminEvents() {
     }, 2500);
 }
 
+function updateTimePreview() {
+    const h12 = parseInt(document.getElementById('target-hour-12')?.value || '10', 10);
+    let min = parseInt(document.getElementById('target-min')?.value || '0', 10);
+    if (isNaN(min) || min < 0) min = 0;
+    if (min > 59) min = 59;
+    const ampm = document.getElementById('target-ampm')?.value || 'PM';
+
+    // Calculate 24-hr format
+    let h24 = h12 % 12;
+    if (ampm === 'PM') h24 += 12;
+
+    const hiddenH = document.getElementById('target-hour');
+    if (hiddenH) hiddenH.value = h24;
+
+    const previewEl = document.getElementById('target-time-preview-text');
+    if (previewEl) {
+        const periodName = ampm === 'PM' ? 'شەو / ئێوارە' : 'بەیانی';
+        const formattedMin = String(min).padStart(2, '0');
+        const formattedH24 = String(h24).padStart(2, '0');
+
+        const now = new Date();
+        const target = new Date();
+        target.setHours(h24, min, 0, 0);
+        let diffMs = target.getTime() - now.getTime();
+        if (diffMs <= -10 * 60 * 1000) {
+            target.setDate(target.getDate() + 1);
+            diffMs = target.getTime() - now.getTime();
+        }
+
+        let diffText = '';
+        if (diffMs > 0) {
+            const diffMins = Math.round(diffMs / 60000);
+            if (diffMins < 60) {
+                diffText = ` — ⏳ پاش ${diffMins} خولەکی تر دەستپێدەکات`;
+            } else {
+                const diffHrs = Math.floor(diffMins / 60);
+                const remMins = diffMins % 60;
+                diffText = ` — ⏳ پاش ${diffHrs} کاتژمێر و ${remMins} خولەکی تر`;
+            }
+        }
+
+        previewEl.textContent = `کاتی دیاریکراو: کاتژمێر ${h12}:${formattedMin}ی ${periodName} (${formattedH24}:${formattedMin})${diffText}`;
+    }
+}
+
+window.setPresetTime = function(minutesFromNow) {
+    const now = new Date();
+    const target = new Date(now.getTime() + minutesFromNow * 60000);
+    const h24 = target.getHours();
+    const min = target.getMinutes();
+    const ampm = h24 >= 12 ? 'PM' : 'AM';
+    const h12 = (h24 % 12) === 0 ? 12 : (h24 % 12);
+
+    const elH12 = document.getElementById('target-hour-12');
+    const elMin = document.getElementById('target-min');
+    const elAmpm = document.getElementById('target-ampm');
+
+    if (elH12) elH12.value = h12;
+    if (elMin) elMin.value = min;
+    if (elAmpm) elAmpm.value = ampm;
+
+    updateTimePreview();
+};
+
+window.setPresetFixed = function(h24, minute) {
+    const ampm = h24 >= 12 ? 'PM' : 'AM';
+    const h12 = (h24 % 12) === 0 ? 12 : (h24 % 12);
+
+    const elH12 = document.getElementById('target-hour-12');
+    const elMin = document.getElementById('target-min');
+    const elAmpm = document.getElementById('target-ampm');
+
+    if (elH12) elH12.value = h12;
+    if (elMin) elMin.value = minute;
+    if (elAmpm) elAmpm.value = ampm;
+
+    updateTimePreview();
+};
+
 function loadSettingsIntoForm() {
     try {
         const saved = localStorage.getItem(STORAGE_KEYS.SETTINGS);
         if (saved) {
             const s = JSON.parse(saved);
             if (s.instituteName) document.getElementById('inst-name').value = s.instituteName;
-            if (s.targetHour   !== undefined) document.getElementById('target-hour').value  = s.targetHour;
-            if (s.targetMinute !== undefined) document.getElementById('target-min').value    = s.targetMinute;
+            if (s.targetHour !== undefined) {
+                const h24 = parseInt(s.targetHour, 10);
+                const ampm = h24 >= 12 ? 'PM' : 'AM';
+                const h12 = (h24 % 12) === 0 ? 12 : (h24 % 12);
+                if (document.getElementById('target-hour-12')) document.getElementById('target-hour-12').value = h12;
+                if (document.getElementById('target-ampm')) document.getElementById('target-ampm').value = ampm;
+                if (document.getElementById('target-hour')) document.getElementById('target-hour').value = h24;
+            }
+            if (s.targetMinute !== undefined) {
+                if (document.getElementById('target-min')) document.getElementById('target-min').value = s.targetMinute;
+            }
             if (s.adminUsername) {
                 document.getElementById('admin-username').value = (s.adminUsername !== 'admin') ? s.adminUsername : DEFAULT_ADMIN_USER;
             } else {
@@ -656,6 +744,12 @@ function loadSettingsIntoForm() {
             }
         }
     } catch (e) {}
+
+    updateTimePreview();
+
+    document.getElementById('target-hour-12')?.addEventListener('change', updateTimePreview);
+    document.getElementById('target-min')?.addEventListener('input', updateTimePreview);
+    document.getElementById('target-ampm')?.addEventListener('change', updateTimePreview);
 }
 
 function renderParticipantsList() {
