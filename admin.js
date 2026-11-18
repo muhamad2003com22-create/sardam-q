@@ -211,6 +211,7 @@ function initAdminAuth() {
     const logoutBtn = document.getElementById('btn-admin-logout');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
+            document.documentElement.classList.remove('admin-persisted');
             localStorage.removeItem('admin_auth');
             sessionStorage.removeItem('admin_auth');
             location.reload();

@@ -240,8 +240,13 @@ function initThemeToggle() {
 // ══════════════════════════════════════════════════
 let deferredPwaPrompt = null;
 function initPwa() {
+    if ('caches' in window) {
+        caches.delete('quiz-pwa-v1').catch(() => {});
+    }
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
+        navigator.serviceWorker.register('./sw.js?v=2.2').then(reg => {
+            if (reg) reg.update().catch(() => {});
+        }).catch(() => {});
     }
 
     const installBtn = document.getElementById('btn-pwa-install');
@@ -413,6 +418,7 @@ function handleAuthGate() {
                 isAdmin: !!data.isAdmin
             };
 
+            document.documentElement.classList.add('auth-persisted');
             showWelcomeCard(data.name, data.dept);
             if (overlay) overlay.classList.add('hidden');
 
@@ -435,6 +441,7 @@ function handleAuthGate() {
         }
     }
 
+    document.documentElement.classList.remove('auth-persisted');
     if (overlay) overlay.classList.remove('hidden');
     initCountdownTimer();
 }
@@ -534,6 +541,7 @@ window.updateStrength = function(val) {
 };
 
 window.logoutUser = function() {
+    document.documentElement.classList.remove('auth-persisted');
     localStorage.removeItem('quiz_logged_in');
     sessionStorage.removeItem('quiz_logged_in');
     localStorage.removeItem(STORAGE_KEYS.CURRENT_PLAYER);

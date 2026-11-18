@@ -7,20 +7,29 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>پێشبڕکێی شەوانەی پەیمانگا | کاتژمێر ١٠:٣٠</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2.2">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+    <script>
+        // Instant check to guarantee zero-flash persistent login on refresh
+        try {
+            if (localStorage.getItem('quiz_logged_in') || sessionStorage.getItem('quiz_logged_in')) {
+                document.documentElement.classList.add('auth-persisted');
+            }
+        } catch (e) {}
+    </script>
     <style>
 /* ════════════════════════════════════════
    AUTH OVERLAY
 ════════════════════════════════════════ */
+html.auth-persisted #auth-overlay { display: none !important; }
 #auth-overlay {
     position: fixed; inset: 0; z-index: 200;
     background: linear-gradient(135deg, #fff7f3 0%, #fff 55%, #fff4ee 100%);
     display: flex; align-items: center; justify-content: center;
     padding: 1.25rem; overflow-y: auto;
 }
-#auth-overlay.hidden { display: none; }
+#auth-overlay.hidden { display: none !important; }
 
 .auth-box {
     background: #fff;
@@ -565,8 +574,8 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js"></script>
-    <script src="audio.js"></script>
-    <script src="app.js"></script>
+    <script src="supabase.js?v=2.2"></script>
+    <script src="audio.js?v=2.2"></script>
+    <script src="app.js?v=2.2"></script>
 </body>
 </html>
