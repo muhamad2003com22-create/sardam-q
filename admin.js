@@ -463,6 +463,11 @@ function setupAdminEvents() {
             localStorage.setItem(STORAGE_KEYS.LIVE_SESSION, JSON.stringify(session));
             localStorage.setItem('institute_night_quiz_live_active', 'true');
 
+            // Broadcast live game start to ALL students on Supabase Cloud
+            if (window.supabaseService && typeof window.supabaseService.pushLiveSession === 'function') {
+                window.supabaseService.pushLiveSession(session);
+            }
+
             if (window.supabaseService && typeof window.supabaseService.pushActivity === 'function') {
                 window.supabaseService.pushActivity({
                     id: 'act_live_' + now,
@@ -490,8 +495,14 @@ function setupAdminEvents() {
     const stopLiveBtn = document.getElementById('btn-stop-live');
     if (stopLiveBtn) {
         stopLiveBtn.addEventListener('click', () => {
+            const stopSession = { isActive: false, startedAt: 0, doorsCloseAt: 0, token: '' };
             localStorage.removeItem(STORAGE_KEYS.LIVE_SESSION);
             localStorage.setItem('institute_night_quiz_live_active', 'false');
+
+            if (window.supabaseService && typeof window.supabaseService.pushLiveSession === 'function') {
+                window.supabaseService.pushLiveSession(stopSession);
+            }
+
             if (adminDoorInterval) { clearInterval(adminDoorInterval); adminDoorInterval = null; }
             renderLiveStatus();
             alert('⚪ پێشبڕکێکە ڕاگیرا و گەڕێندرایەوە بۆ دۆخی چاوەڕوانی.');
@@ -566,6 +577,9 @@ function setupAdminEvents() {
             };
 
             localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+            if (window.supabaseService && typeof window.supabaseService.pushSettings === 'function') {
+                window.supabaseService.pushSettings(settings);
+            }
             if (document.getElementById('admin-new-password')) {
                 document.getElementById('admin-new-password').value = '';
             }

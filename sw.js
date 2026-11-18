@@ -1,5 +1,5 @@
 // Service Worker for Institute Night Quiz PWA (Network-First Strategy)
-const CACHE_NAME = 'quiz-pwa-v2.1';
+const CACHE_NAME = 'quiz-pwa-v2.3';
 const ASSETS = [
   './',
   './index.html',

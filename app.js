@@ -2054,7 +2054,7 @@ function initCountdownTimer() {
     if (countdownInterval) clearInterval(countdownInterval);
     countdownInterval = setInterval(update, 1000);
 
-    // Cross-tab real-time sync when Admin triggers 20s live or moderates chat
+    // Cross-tab & Multi-device cloud sync
     window.addEventListener('storage', (e) => {
         if (e.key === STORAGE_KEYS.LIVE_SESSION || e.key === 'institute_night_quiz_live_active') {
             update();
@@ -2062,6 +2062,10 @@ function initCountdownTimer() {
         if (e.key === STORAGE_KEYS.CHAT) {
             renderChatMessages();
         }
+    });
+
+    window.addEventListener('quiz_live_synced', () => {
+        update();
     });
 }
 

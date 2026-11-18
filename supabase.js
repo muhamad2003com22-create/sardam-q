@@ -252,7 +252,59 @@ window.supabaseService = {
         return await sbRest('quiz_chat?timestamp=gt.0', 'DELETE');
     },
 
-    // ── 6. Full Initial Sync ──
+    // ── 6. Live Session & Game State Cloud Sync ──
+    async pushLiveSession(session) {
+        if (!session) return;
+        return await sbRest('quiz_settings', 'POST', {
+            key: 'live_session',
+            value: session
+        }, { 'Prefer': 'resolution=merge-duplicates' });
+    },
+
+    async pullLiveSession() {
+        const rows = await sbRest('quiz_settings?key=eq.live_session&select=*');
+        if (Array.isArray(rows) && rows.length > 0 && rows[0].value) {
+            const session = rows[0].value;
+            const currentStr = localStorage.getItem('institute_night_quiz_live_session');
+            const newStr = JSON.stringify(session);
+            if (currentStr !== newStr) {
+                if (session.isActive) {
+                    localStorage.setItem('institute_night_quiz_live_session', newStr);
+                    localStorage.setItem('institute_night_quiz_live_active', 'true');
+                } else {
+                    localStorage.removeItem('institute_night_quiz_live_session');
+                    localStorage.setItem('institute_night_quiz_live_active', 'false');
+                }
+                // Notify UI components across tabs and devices
+                window.dispatchEvent(new Event('quiz_live_synced'));
+            }
+            return session;
+        }
+        return null;
+    },
+
+    // ── 7. Global Settings Sync ──
+    async pushSettings(settings) {
+        if (!settings) return;
+        return await sbRest('quiz_settings', 'POST', {
+            key: 'app_settings',
+            value: settings
+        }, { 'Prefer': 'resolution=merge-duplicates' });
+    },
+
+    async pullSettings() {
+        const rows = await sbRest('quiz_settings?key=eq.app_settings&select=*');
+        if (Array.isArray(rows) && rows.length > 0 && rows[0].value) {
+            const cloudSettings = rows[0].value;
+            const localSettings = JSON.parse(localStorage.getItem('institute_night_quiz_settings') || '{}');
+            const merged = { ...localSettings, ...cloudSettings };
+            localStorage.setItem('institute_night_quiz_settings', JSON.stringify(merged));
+            return merged;
+        }
+        return null;
+    },
+
+    // ── 8. Full Initial Sync ──
     async syncAll() {
         try {
             await Promise.allSettled([
@@ -260,7 +312,9 @@ window.supabaseService = {
                 this.pullProfiles(),
                 this.pullActivities(),
                 this.pullQuestions(),
-                this.pullChatMessages()
+                this.pullChatMessages(),
+                this.pullLiveSession(),
+                this.pullSettings()
             ]);
         } catch (e) {
             console.warn('Supabase sync notice:', e);
@@ -268,7 +322,7 @@ window.supabaseService = {
     }
 };
 
-// Auto-run initial sync in the background
+// Continuous background sync for Real-time multiplayer (Cloud polling every 1.8 seconds)
 if (typeof window !== 'undefined') {
     document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
@@ -280,7 +334,23 @@ if (typeof window !== 'undefined') {
                     if (typeof renderStats === 'function') renderStats();
                     if (typeof renderChatMessages === 'function') renderChatMessages();
                     if (typeof renderAdminChat === 'function') renderAdminChat();
+                    if (typeof loadSettingsIntoForm === 'function') loadSettingsIntoForm();
                 });
+
+                // Real-time live session polling so all students' phones receive Admin's start immediately!
+                setInterval(() => {
+                    window.supabaseService.pullLiveSession();
+                }, 1800);
+
+                // Chat sync every 3.5 seconds
+                setInterval(() => {
+                    window.supabaseService.pullChatMessages().then(msgs => {
+                        if (msgs) {
+                            if (typeof renderChatMessages === 'function') renderChatMessages();
+                            if (typeof renderAdminChat === 'function') renderAdminChat();
+                        }
+                    });
+                }, 3500);
             }
         }, 800);
     });
