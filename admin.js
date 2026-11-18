@@ -134,7 +134,7 @@ function checkAndApplyLockout() {
 
 function initAdminAuth() {
     // Already authenticated this session?
-    if (sessionStorage.getItem('admin_auth') === '1') {
+    if (sessionStorage.getItem('admin_auth') === '1' || localStorage.getItem('admin_auth') === '1') {
         const overlay = document.getElementById('admin-login-overlay');
         if (overlay) overlay.classList.add('hidden');
     }
@@ -201,6 +201,7 @@ function initAdminAuth() {
             // Success!
             resetLockout();
             if (errEl) errEl.classList.remove('show');
+            localStorage.setItem('admin_auth', '1');
             sessionStorage.setItem('admin_auth', '1');
             const overlay = document.getElementById('admin-login-overlay');
             if (overlay) overlay.classList.add('hidden');
@@ -210,6 +211,7 @@ function initAdminAuth() {
     const logoutBtn = document.getElementById('btn-admin-logout');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('admin_auth');
             sessionStorage.removeItem('admin_auth');
             location.reload();
         });

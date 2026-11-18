@@ -394,7 +394,7 @@ function initDefaultUsers() {
 
 // ── Auth Gate Check ──
 function handleAuthGate() {
-    const session = sessionStorage.getItem('quiz_logged_in');
+    const session = localStorage.getItem('quiz_logged_in') || sessionStorage.getItem('quiz_logged_in');
     const overlay = document.getElementById('auth-overlay');
 
     if (session) {
@@ -409,7 +409,8 @@ function handleAuthGate() {
                 avatarUrl: (prof && prof.avatarUrl) || data.avatarUrl || '',
                 joinedAt: data.joinedAt || new Date().toLocaleTimeString(),
                 eliminated: false,
-                score: 0
+                score: 0,
+                isAdmin: !!data.isAdmin
             };
 
             showWelcomeCard(data.name, data.dept);
@@ -418,16 +419,18 @@ function handleAuthGate() {
             const profileBtn = document.getElementById('btn-view-profile');
             if (profileBtn) profileBtn.style.display = 'inline-flex';
 
-            if (user.username === 'hama22#it' || user.username === 'hama22' || user.isAdmin) {
+            const uName = (data.username || '').toLowerCase();
+            if (uName === 'hama22#it' || uName === 'hama22' || data.isAdmin) {
                 const adminBtn = document.getElementById('btn-admin-panel');
                 if (adminBtn) adminBtn.style.display = 'inline-flex';
-                showToast('بەخێربێیت بەڕێوەبەر 👑', 'دەتوانیت لە ڕێگەی دوگمەی "⚙️ پەنێڵی ئادمین" بچیتە بەشی بەڕێوەبردن.', 'success', '⚙️', 6000);
             }
 
             checkExistingSession();
             initCountdownTimer();
             return;
         } catch (e) {
+            console.warn('Session parse notice:', e);
+            localStorage.removeItem('quiz_logged_in');
             sessionStorage.removeItem('quiz_logged_in');
         }
     }
@@ -531,6 +534,7 @@ window.updateStrength = function(val) {
 };
 
 window.logoutUser = function() {
+    localStorage.removeItem('quiz_logged_in');
     sessionStorage.removeItem('quiz_logged_in');
     localStorage.removeItem(STORAGE_KEYS.CURRENT_PLAYER);
     location.reload();
@@ -1182,6 +1186,7 @@ window.openEditProfileModal = function() {
         currentPlayer.name = newName;
         currentPlayer.dept = newDept;
         if (tempAvatar !== undefined) currentPlayer.avatarUrl = tempAvatar;
+        localStorage.setItem('quiz_logged_in', JSON.stringify(currentPlayer));
         sessionStorage.setItem('quiz_logged_in', JSON.stringify(currentPlayer));
         savePlayer(currentPlayer);
         recordParticipant(currentPlayer);
@@ -1335,7 +1340,8 @@ function setupEventListeners() {
                 score: 0
             };
 
-            sessionStorage.setItem('quiz_logged_in', JSON.stringify(currentPlayer));
+            localStorage.setItem('quiz_logged_in', JSON.stringify(currentPlayer));
+        sessionStorage.setItem('quiz_logged_in', JSON.stringify(currentPlayer));
             savePlayer(currentPlayer);
             recordParticipant(currentPlayer);
             logStudentActivity(user, 'login', '🔑 چوونەژوورەوەی سەرکەوتوو بۆ ناو ئەپ');
@@ -1349,7 +1355,8 @@ function setupEventListeners() {
             const profileBtn = document.getElementById('btn-view-profile');
             if (profileBtn) profileBtn.style.display = 'inline-flex';
 
-            if (user.username === 'hama22#it' || user.username === 'hama22' || user.isAdmin) {
+            const curU = (currentPlayer.username || '').toLowerCase();
+            if (curU === 'hama22#it' || curU === 'hama22' || currentPlayer.isAdmin) {
                 const adminBtn = document.getElementById('btn-admin-panel');
                 if (adminBtn) adminBtn.style.display = 'inline-flex';
                 showToast('بەخێربێیت بەڕێوەبەر 👑', 'دەتوانیت لە ڕێگەی دوگمەی "⚙️ پەنێڵی ئادمین" بچیتە بەشی بەڕێوەبردن.', 'success', '⚙️', 6000);
@@ -1457,7 +1464,8 @@ function setupEventListeners() {
             };
             window.regAvatarDataUrl = null;
 
-            sessionStorage.setItem('quiz_logged_in', JSON.stringify(currentPlayer));
+            localStorage.setItem('quiz_logged_in', JSON.stringify(currentPlayer));
+        sessionStorage.setItem('quiz_logged_in', JSON.stringify(currentPlayer));
             savePlayer(currentPlayer);
             recordParticipant(currentPlayer);
             logStudentActivity(currentPlayer, 'register', '📝 تۆمارکردنی ئەکاونتی نوێ لە پەیمانگا');
@@ -1471,7 +1479,8 @@ function setupEventListeners() {
             const profileBtn = document.getElementById('btn-view-profile');
             if (profileBtn) profileBtn.style.display = 'inline-flex';
 
-            if (user.username === 'hama22#it' || user.username === 'hama22' || user.isAdmin) {
+            const curU = (currentPlayer.username || '').toLowerCase();
+            if (curU === 'hama22#it' || curU === 'hama22' || currentPlayer.isAdmin) {
                 const adminBtn = document.getElementById('btn-admin-panel');
                 if (adminBtn) adminBtn.style.display = 'inline-flex';
                 showToast('بەخێربێیت بەڕێوەبەر 👑', 'دەتوانیت لە ڕێگەی دوگمەی "⚙️ پەنێڵی ئادمین" بچیتە بەشی بەڕێوەبردن.', 'success', '⚙️', 6000);
