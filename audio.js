@@ -143,6 +143,27 @@ class SoundFX {
             t += n.d * 0.9;
         });
     }
+
+    playNotification() {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        // Pleasant crystal chime (E6 to B6)
+        const notes = [1318.51, 1975.53];
+        notes.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.11);
+            gain.gain.setValueAtTime(0, now + idx * 0.11);
+            gain.gain.linearRampToValueAtTime(0.22, now + idx * 0.11 + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.11 + 0.38);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + idx * 0.11);
+            osc.stop(now + idx * 0.11 + 0.4);
+        });
+    }
 }
 
 window.soundFX = new SoundFX();
